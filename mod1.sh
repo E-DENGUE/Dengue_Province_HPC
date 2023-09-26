@@ -19,7 +19,7 @@ module load R/4.2.0-foss-2020b
 
 # Use modulos to iterate through all task IDs
 task_id=$SLURM_ARRAY_TASK_ID
-j=$(( (task_id-1)  / N_models )) # $(( )) does arithmetic evaluation; Bash performs integer division so floor() is default
+j=$(( (task_id-1)  / N_models + 1 )) # $(( )) does arithmetic evaluation; Bash performs integer division so floor() is default
 k=$(( task_id  % N_models  + 1 )) # $(( )) does arithmetic evaluation
 
     # Run your R script with the task-specific J and K

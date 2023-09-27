@@ -35,3 +35,7 @@ if there are other packages that need to be installed, instal them here as well.
 4) run salloc mod1.sh
 
 NOTES: if you add more models to load.R, you need to modify the .sh file to reflect the new range of indices AND the total number of models. You can test a subset of the models by specifying the corresponding indices on the SBATCh line at the top. However, N_mod should correspond to the TOTAL number of models that have been evaluated not just those in the current array call
+
+When running INLA on Linux, use the following. Without this, the model unpredictably fails:
+library(INLA)
+inla.setOption(mkl=TRUE)

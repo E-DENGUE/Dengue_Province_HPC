@@ -2,6 +2,7 @@
 #SBATCH --time=02:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --partition day,scavenge
+#SBATCH --requeue
 #SBATCH --mail-user=daniel.weinberger@yale.edu
 #SBATCH --cpus-per-task=8
 #SBATCH -o ./Report/output.%a.out # STDOUT

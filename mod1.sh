@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=20:00:00
+#SBATCH --time=02:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --partition day,scavenge
 #SBATCH --mail-user=daniel.weinberger@yale.edu

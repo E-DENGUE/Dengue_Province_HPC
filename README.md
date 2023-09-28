@@ -39,3 +39,5 @@ NOTES: if you add more models to load.R, you need to modify the .sh file to refl
 When running INLA on Linux, use the following. Without this, the model unpredictably fails:
 library(INLA)
 inla.setOption(mkl=TRUE)
+
+IMPORTANT: on set X to be the number of cores requested from the cluster (e.g., 8): inla(..., num.threads=8) 

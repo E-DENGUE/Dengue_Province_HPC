@@ -6,11 +6,11 @@
 #SBATCH --mail-user=daniel.weinberger@yale.edu
 #SBATCH --cpus-per-task=8
 #SBATCH -o ./Report/output.%a.out # STDOUT
-#SBATCH --array=1-1620   # If k models and J hold out time points this is 1- j*k
+#SBATCH --array=1-2052   # If k models and J hold out time points this is 1- j*k
 
 
 #Define the number of models being tested
-N_models=15
+N_models=19
 
 #Load R
 module load R/4.2.0-foss-2020b

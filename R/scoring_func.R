@@ -2,7 +2,7 @@ scoring_func <- function(Y){
   
   forecast.index <- which((Y$ds$forecast==1))
   
-  test1 <-inla.posterior.sample(1000, Y$mod, selection = list('Predictor'=forecast.index), num.threads=NULL)
+  test1 <-inla.posterior.sample(1000, Y$mod, selection = list('Predictor'=forecast.index), num.threads=NULL,seed=123)
   
   log.scale.pred.samples <- sapply(test1, function(X) X$latent , simplify='array')
   

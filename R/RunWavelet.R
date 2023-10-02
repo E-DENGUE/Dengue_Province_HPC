@@ -25,7 +25,9 @@ source('./R/WaveletPkg.R')
 #   rename(date=year_month) 
 d1 <- read.csv('./Data/historical_input_data_osf_io4zgrx.csv') %>%
   filter(country=='vietnam') %>%
-  rename(province=admin1)
+  rename(province=admin1) %>%
+  mutate(date = as.Date(date,'%d/%m/%Y')) %>%
+  filter(date>='2001-01-01' & date<='2017-12-01')
 
 all.provinces <- unique(d1$province)
 all.provinces <- all.provinces[-grep('tuyen quang',all.provinces)]
@@ -63,15 +65,12 @@ phase.diff.raw.mat <- apply(all.phases.mat,2, function(X){
   return(Y)
 } )
 
-phase.diff.mat <- apply(all.phases.mat,2, function(Y){
+phase.diff.mat <- apply(phase.diff.raw.mat,2, function(Y){
   Z <- ((Y + 3*pi) %% (2*pi))- (pi)
-  return(Y)
+  return(Z)
 } )
 
-
-
 matplot(phase.diff.mat, type='l')
-cohPhaseDiff(series1=all.ds[[1]], series2=all.ds[[2]], dj=1/6, dt=1/12)
 
 provinces.run <-  sapply(all.wave, '[[', 'province')
 
@@ -80,54 +79,49 @@ mean.phase.diff <- apply(phase.diff.mat,2,mean)
 phase.diff <- cbind.data.frame('phase.diff.1x'=mean.phase.diff,'province'=provinces.run) %>%
 arrange(-phase.diff.1x)
 
+#Leaing provinces note red river delta region and northeast are adjacent:
+##hung yen (red river delta); 
+#thai nguyen (northeast), 
+#hai duong (red river delta), 
+#bac giang (northeast); 
+#thai binh (red river delta), 
+#dak nong (central highlands), 
+#ha giang (northeast), 
+#vinh phuc (red river delta), 
+#binh phuoc (southeast)
 
 ## OPTION 2: look at start or mid point
-### Drawbacks--seems to be 
-# all.phases <- sapply(all.wave, '[[', 'phase_angle') %>%
-#   as.data.frame() %>%
-#   mutate(date = as.Date(unique(d1$date)),
-#          year=year(date),
-#          month=month(date),
-#          epiyr = if_else(month>=4,year,(year-1) )
-#          ) %>%
-#   dplyr::select(starts_with('V'), date, year, month) %>%
-#   reshape2::melt(., id.vars=c('date', 'year','month')) %>%
-#   group_by(variable, year) %>%
-#   mutate(min_phase_abs = min(abs(value)),
-#          min_phase = min(value),
-#           peak_month = if_else(min_phase_abs==abs(value), month, NA_real_),
-#          start_month = if_else(min_phase== value, month, NA_real_)
-#                   ) %>%
-#   filter(!is.na(start_month)) %>%
-#   ungroup() %>%
-#   arrange(year, start_month) %>%
-#   group_by(year) %>%
-#   mutate(delay = start_month - min(start_month)) %>%
-#   reshape2::dcast(., year ~ variable, value.var='delay') 
+### Drawbacks--need to be able to define epidemiological year...not clear where boundary is
+dates <- d1 %>%
+  filter(!is.na(total)) %>%
+    group_by(date) %>%
+  summarize(N=n())
+
+all.phases <- sapply(all.wave, '[[', 'phase_angle') %>%
+  as.data.frame() %>%
+  mutate(date = as.Date(unique(d1$date)),
+         year=year(date),
+         month=month(date),
+         epiyr = if_else(month>=4,year,(year-1) )
+         ) %>%
+  dplyr::select(starts_with('V'), date, year, month) %>%
+  reshape2::melt(., id.vars=c('date', 'year','month')) %>%
+  group_by(variable, year) %>%
+  mutate(min_phase_abs = min(abs(value)),
+         min_phase = min(value),
+          peak_month = if_else(min_phase_abs==abs(value), month, NA_real_),
+         start_month = if_else(min_phase== value, month, NA_real_)
+                  ) %>%
+  filter(!is.na(peak_month)) %>%
+  ungroup() %>%
+  arrange(year, peak_month) %>%
+  group_by(year) %>%
+  mutate(delay = peak_month - min(peak_month)) %>%
+  reshape2::dcast(., year ~ variable, value.var='delay')
 
 # Mean delay from earliest peak  
-apply(all.phases,2,mean)
+peak_delays <- apply(all.phases,2,mean) 
+  peak_delays <- cbind.data.frame(peak_delays[-1], all.provinces)
 
-#Earliest provinces on average:
-all.provinces[c(2,3,11,14,15,19)]
-
-#Bạc Liêu": Mekong Delta
-#"Bình Phước" : SE
-#	Phú Yên:  South Central Coast
-# Quảng Ninh": Northeast
-# Trà Vinh: Mekong Delta
-
-plot(phase1, type='l')
-
-
-phase.diff <- all.phases[,11]-all.phases[,3]
-
-phasediff2.1_correct <- ((phase.diff + 3*pi) %% (2*pi)) - (pi)
-
-plot(phasediff2.1_correct, type='l')
-
-#phasediff2.1_correct <- ((phase.diff2.1 + 3*pi) %% (2*pi)) - (pi)
-#shows corrected phase diff in modulo for the 12 month phase
-
-#plot(dates,phasediff2.1_correct,type='l',col="blue", lty=1,ylim=c(-pi,pi))
-
+  ##This tells a similar story to the approach1:
+  #leading provinces ar ein Northeast and red river delta (and maybe northwest)
